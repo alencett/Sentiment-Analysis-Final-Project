@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title if title else "Sentiment Analyzer" }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="h-100">
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <!-- <img src="{{ url_for('static', filename='logo.svg') }}" alt="" class="logo" onerror="this.style.display='none'"> -->
+          <span class="brand-name">Sentiment Analyzer</span>
+        </div>
+        <nav class="nav">
+          <a href="/" class="nav-link">Home</a>
+          <a href="#about" class="nav-link">About</a>
+          <a href="https://github.com" target="_blank" class="nav-link muted" rel="noreferrer">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© {{ 2025 }} Sentiment Analyzer • Built with spaCy + TF‑IDF + Logistic Regression</p>
+      </div>
+    </footer>
+  </body>
+</html>

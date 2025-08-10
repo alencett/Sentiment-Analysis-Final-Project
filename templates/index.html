@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Real‑Time Sentiment Analyzer</h1>
+  <p class="sub">
+    Paste any text and get a positive / negative / neutral prediction with confidence,
+    a quick visualization, and a word cloud of the key terms.
+  </p>
+</section>
+
+<section class="card">
+  <form method="post">
+    <label for="text" class="label">Enter text</label>
+    <textarea id="text" name="text" rows="8" placeholder="Type or paste text here...">{{ text }}</textarea>
+
+    <div class="actions">
+      <button type="submit" class="btn primary" formaction="{{ url_for('analyze') }}">Analyze</button>
+      <button type="submit" class="btn neutral" formaction="{{ url_for('clear') }}">Clear</button>
+    </div>
+  </form>
+
+  {% if error %}
+    <div class="alert">{{ error }}</div>
+  {% endif %}
+</section>
+
+{% if result %}
+<section class="results card">
+  <h2>Results</h2>
+  <div class="grid">
+    <div class="metrics">
+      <div class="metric">
+        <span class="k">Sentiment</span>
+        <span class="v badge {{ result['label']|lower }}">{{ result['label'] }}</span>
+      </div>
+      <div class="metric">
+        <span class="k">Positive Probability</span>
+        <span class="v">{{ "%.3f"|format(result['prob']) }}</span>
+      </div>
+      <div class="metric">
+        <span class="k">Confidence</span>
+        <span class="v">{{ "%.3f"|format(result['conf']) }}</span>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="sentChart" height="200"></canvas>
+      </div>
+
+      <div class="keywords">
+        <h3>Key Influencing Words</h3>
+        <div class="cols">
+          <div>
+            <h4>Positive signals</h4>
+            <ul>
+              {% for item in result['top_pos'] %}
+                <li>{{ item }}</li>
+              {% else %}
+                <li class="muted">No strong positive features found.</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div>
+            <h4>Negative signals</h4>
+            <ul>
+              {% for item in result['top_neg'] %}
+                <li>{{ item }}</li>
+              {% else %}
+                <li class="muted">No strong negative features found.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz">
+      <h3>Word Cloud</h3>
+      {% if result['wordcloud'] %}
+        <img class="wc" src="{{ result['wordcloud'] }}" alt="word cloud" />
+      {% else %}
+        <p class="muted">No word cloud available for this input.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Provide chart data as safe JSON so VS Code's JS parser stays happy -->
+<script id="chart-data" type="application/json">
+  {{ result['chart']|tojson }}
+</script>
+
+<script>
+  (function() {
+    const ctx = document.getElementById('sentChart');
+    if (!ctx) return;
+
+    const el = document.getElementById('chart-data');
+    if (!el) return;
+
+    let chartData;
+    try { chartData = JSON.parse(el.textContent); } catch (e) { return; }
+
+    const data = {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [{
+        label: 'Sentiment',
+        data: [chartData.positive, chartData.negative, chartData.neutral],
+        backgroundColor: [
+          'rgba(52, 211, 153, 0.6)',
+          'rgba(248, 113, 113, 0.6)',
+          'rgba(251, 191, 36, 0.6)'
+        ],
+        borderColor: [
+          'rgba(52, 211, 153, 1)',
+          'rgba(248, 113, 113, 1)',
+          'rgba(251, 191, 36, 1)'
+        ],
+        borderWidth: 1
+      }]
+    };
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data,
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%'
+      }
+    });
+  })();
+</script>
+{% endif %}
+
+<section id="about" class="about card">
+  <h2>About</h2>
+  <p>
+    This project is a final assignment for the <strong>Sentiment Analysis</strong> course. It analyzes
+    user‑input text and predicts sentiment as <em>Positive</em>, <em>Negative</em>, or <em>Neutral</em>.
+  </p>
+  <ul class="bullets">
+    <li><strong>NLP stack:</strong> spaCy for tokenization and lemmatization.</li>
+    <li><strong>Features:</strong> TF‑IDF (unigrams + bigrams).</li>
+    <li><strong>Model:</strong> Logistic Regression (probability outputs for confidence); SVM optional.</li>
+    <li><strong>Visuals:</strong> Doughnut chart for probabilities, word cloud, and per‑input feature contributions.</li>
+    <li><strong>Data:</strong> Trained on the IMDB Reviews dataset.</li>
+  </ul>
+  <p class="muted small">
+    Confidence is derived from the distance of the positive probability to 0.5, and a small margin around 0.5 is labeled Neutral.
+  </p>
+</section>
+{% endblock %}
