@@ -1,5 +1,7 @@
 # Real‑Time Sentiment Analyzer — Final Project
 
+## Frontend Link: https://sentiment-analysis-final-project.onrender.com/
+
 ### Presentation
 
 Course: 2025S‑T3 BAM 3034 — Sentiment Analysis and Text Mining 01
